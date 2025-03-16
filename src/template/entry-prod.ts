@@ -1,9 +1,9 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-const fs = require('fs');
+import { app as electronApp, BrowserWindow } from 'electron';
+import path from 'path';
+import fs from 'fs';
 
-app.on('ready', () => {
-  let userConfig = {};
+electronApp.on('ready', () => {
+  let userConfig: { browserWindow?: Electron.BrowserWindowConstructorOptions } = {};
 
   if (fs.existsSync(path.join(__dirname, './config.js'))) {
     userConfig = require('./config').default;

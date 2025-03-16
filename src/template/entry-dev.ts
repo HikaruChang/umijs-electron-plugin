@@ -1,19 +1,21 @@
-const electron = require('electron');
-const fs = require('fs');
-const path = require('path');
-const decache = require('clear-module');
-const { join, parse } = require('path');
-const _ = require('lodash');
-const chokidar = require('chokidar');
+import electron from "electron";
+import fs from "fs";
+import path from "path";
+import decache from "clear-module";
+import { join, parse } from "path";
+import _ from "lodash";
+import chokidar from "chokidar";
 
 const mPath = path.join(__dirname, './dist/index.js');
 
 const { UMI_APP_PORT = '8000' } = process.env;
 
 const main = async () => {
-  const context = { browserWindow: null, electron: electron };
+  const context: { browserWindow: electron.BrowserWindow | null; electron: typeof electron } = {
+    browserWindow: null, electron: electron,
+  }
 
-  let userConfig = {};
+  let userConfig: { browserWindow?: object } = {};
 
   if (fs.existsSync(join(__dirname, './dist/config.js'))) {
     userConfig = require('./dist/config').default;
@@ -39,9 +41,9 @@ const main = async () => {
    */
   const _ipcMainOnMap = {};
   const _ipcOnceMap = {};
-  let _ipcHandleChannels = [];
+  let _ipcHandleChannels: string[] = [];
 
-  const _appUsingEvents = [];
+  const _appUsingEvents: string[] = [];
 
   const hackContext = (_context) => {
     const _on = (filepath) => (channel, listener) => {
@@ -92,13 +94,12 @@ const main = async () => {
         handleOnce: _handleOnce,
       },
       app: {
-        ...electron.app,
-        on: (event, listener) => {
+        on: (event: string, listener: (...args: any[]) => void) => {
           if (_appUsingEvents.includes(event)) {
             return;
           }
           _appUsingEvents.push(event);
-          electron.app.on(event, listener);
+          electron.app.on(event as any, listener);
         },
       },
     };
@@ -162,7 +163,9 @@ const main = async () => {
   };
 
   const hotReplacePreload = () => {
-    context.browserWindow.reload();
+    if (context.browserWindow) {
+      context.browserWindow.reload();
+    }
   };
 
   const src = path.join(__dirname, './dist');
@@ -200,7 +203,7 @@ const main = async () => {
     })
     .on('add', (filepath) => {
       if (isIpcFile(filepath)) {
-        ipcFiles.push(filepath);
+        ipcFiles.push(filepath as never);
         mountModule(filepath);
       }
     });
